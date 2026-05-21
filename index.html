@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Necro Hub — Key System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06000d;
+  --surface:rgba(30,0,55,0.55);
+  --surface2:rgba(12,0,22,0.75);
+  --pa:#7c3aed;
+  --pb:#a855f7;
+  --pc:#c084fc;
+  --pt:#e9d5ff;
+  --bdr:rgba(168,85,247,0.22);
+  --bdrb:rgba(168,85,247,0.55);
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--pt);font-family:'Rajdhani',sans-serif;font-size:16px;overflow-x:hidden}
+body{
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -5%,rgba(124,58,237,0.16) 0%,transparent 65%),
+    radial-gradient(ellipse 45% 35% at 85% 85%,rgba(88,28,135,0.1) 0%,transparent 60%),
+    var(--bg);
+}
+.grid-bg{
+  position:fixed;inset:0;
+  background-image:linear-gradient(rgba(124,58,237,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,0.035) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0;
+}
+.page{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:2.8rem 1.4rem 4rem}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:3rem}
+.header-icon{display:block;margin:0 auto 1rem;width:56px;height:56px;filter:drop-shadow(0 0 14px rgba(168,85,247,0.75))}
+.header h1{
+  font-family:'Cinzel',serif;font-size:clamp(1.7rem,5vw,2.6rem);font-weight:900;
+  letter-spacing:0.07em;
+  background:linear-gradient(135deg,#c084fc 0%,#a855f7 45%,#7c3aed 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1
+}
+.header .sub{font-size:0.8rem;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:rgba(168,85,247,0.55);margin-top:0.45rem}
+
+/* PROGRESS */
+.prog-labels{display:flex;justify-content:space-between;margin-bottom:0.55rem;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(168,85,247,0.32)}
+.prog-labels span.active{color:var(--pb)}
+.prog-labels span.done{color:rgba(168,85,247,0.6)}
+.prog-wrap{background:rgba(124,58,237,0.09);border:1px solid var(--bdr);border-radius:100px;height:5px;margin-bottom:2.8rem;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#c084fc);border-radius:100px;transition:width 0.55s cubic-bezier(.4,0,.2,1)}
+
+/* CHECKPOINT CARD */
+.checkpoint{
+  background:linear-gradient(145deg,rgba(38,0,72,0.52) 0%,rgba(14,0,26,0.82) 100%);
+  border:1px solid var(--bdr);border-radius:18px;padding:1.8rem;
+  margin-bottom:1.8rem;position:relative;overflow:hidden;display:none
+}
+.checkpoint.active{display:block;animation:fadeUp .32s ease}
+.checkpoint::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--pb),transparent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.cp-label{font-family:'Cinzel',serif;font-size:0.64rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--pb);opacity:0.65;margin-bottom:0.35rem}
+.cp-title{font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;color:var(--pc);margin-bottom:1.4rem;letter-spacing:0.04em;display:flex;align-items:center;gap:10px}
+.cp-title svg{flex-shrink:0;filter:drop-shadow(0 0 6px rgba(192,132,252,0.6))}
+
+/* TASKS */
+.tasks{display:flex;flex-direction:column;gap:0.75rem}
+.task{
+  display:flex;align-items:center;gap:0.95rem;
+  background:rgba(8,0,14,0.65);border:1px solid var(--bdr);border-radius:11px;
+  padding:0.85rem 1rem;cursor:pointer;
+  transition:border-color .18s,background .18s;
+  text-decoration:none;color:inherit;position:relative;overflow:hidden
+}
+.task:hover{border-color:var(--bdrb);background:rgba(124,58,237,0.09)}
+.task.completed{border-color:rgba(168,85,247,0.38);background:rgba(80,20,120,0.08);pointer-events:none}
+.task.waiting{pointer-events:none;opacity:0.75}
+
+.task-icon{width:36px;height:36px;border-radius:9px;border:1px solid rgba(168,85,247,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(124,58,237,0.1);transition:all .3s}
+.task.completed .task-icon{background:rgba(124,58,237,0.25);border-color:var(--pa)}
+.task-icon svg{color:var(--pb);transition:color .3s}
+.task.completed .task-icon svg{color:var(--pc)}
+
+.task-info{flex:1;min-width:0}
+.task-name{font-size:0.92rem;font-weight:600;letter-spacing:0.03em;color:var(--pt);display:block;margin-bottom:0.08rem}
+.task.completed .task-name{color:rgba(233,213,255,0.4)}
+.task-type{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(168,85,247,0.42)}
+
+.task-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.task-arrow{color:rgba(168,85,247,0.38);transition:transform .18s,color .18s;font-size:1.1rem;line-height:1}
+.task:hover .task-arrow{transform:translateX(3px);color:var(--pb)}
+.task.completed .task-arrow{display:none}
+
+/* TIMER BAR */
+.timer-wrap{display:none;flex-direction:column;align-items:flex-end;gap:3px}
+.task.waiting .timer-wrap{display:flex}
+.task.waiting .task-arrow{display:none}
+.timer-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--pb);font-weight:600}
+.timer-bar-bg{width:60px;height:3px;background:rgba(124,58,237,0.18);border-radius:100px;overflow:hidden}
+.timer-bar-fill{height:100%;background:linear-gradient(90deg,var(--pa),var(--pc));border-radius:100px;transition:width 1s linear}
+
+/* CHECK MARK */
+.check-icon{display:none;color:var(--pc)}
+.task.completed .check-icon{display:block}
+
+.cp-footer{margin-top:1.3rem;display:flex;align-items:center;justify-content:space-between}
+.cp-count{font-size:0.75rem;letter-spacing:0.1em;color:rgba(168,85,247,0.38)}
+.cp-count span{color:var(--pb);font-weight:600}
+
+.btn-next{
+  font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:600;
+  letter-spacing:0.14em;text-transform:uppercase;
+  padding:0.6rem 1.5rem;border-radius:8px;border:1px solid var(--pa);
+  background:transparent;color:var(--pb);cursor:pointer;transition:all .2s;
+  opacity:0.28;pointer-events:none;display:flex;align-items:center;gap:7px
+}
+.btn-next.unlocked{opacity:1;pointer-events:auto;background:rgba(124,58,237,0.12)}
+.btn-next.unlocked:hover{background:var(--pa);color:#fff;box-shadow:0 0 22px rgba(124,58,237,0.38)}
+.btn-next svg{width:14px;height:14px}
+
+/* KEY SCREEN */
+#screen-key{display:none;text-align:center}
+#screen-key.active{display:block;animation:fadeUp .35s ease}
+
+.key-card{
+  background:linear-gradient(145deg,rgba(38,0,72,0.6) 0%,rgba(14,0,26,0.92) 100%);
+  border:1px solid var(--bdrb);border-radius:22px;padding:2.8rem 2rem;
+  position:relative;overflow:hidden
+}
+.key-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#c084fc,#a855f7,transparent)}
+
+.key-skull{display:block;margin:0 auto 1.1rem;width:68px;height:68px;filter:drop-shadow(0 0 20px rgba(168,85,247,0.8))}
+.key-card h2{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--pc);margin-bottom:0.45rem}
+.key-card > p{font-size:0.82rem;color:rgba(168,85,247,0.48);letter-spacing:0.08em;margin-bottom:2.2rem}
+
+.btn-getkey{
+  font-family:'Cinzel',serif;font-size:0.95rem;font-weight:700;letter-spacing:0.13em;
+  padding:0.95rem 2.2rem;border-radius:11px;border:1px solid var(--pb);
+  background:rgba(124,58,237,0.18);color:var(--pc);cursor:pointer;
+  transition:all .22s;display:inline-flex;align-items:center;gap:10px;margin-bottom:1.8rem
+}
+.btn-getkey:hover{background:linear-gradient(135deg,var(--pa),#6d28d9);color:#fff;box-shadow:0 0 32px rgba(124,58,237,0.48);transform:translateY(-1px)}
+.btn-getkey svg{width:20px;height:20px}
+
+.key-display{display:none;margin-top:0.4rem}
+.key-display.show{display:block;animation:fadeUp .4s ease}
+.key-label{font-size:0.68rem;letter-spacing:0.26em;text-transform:uppercase;color:rgba(168,85,247,0.48);margin-bottom:1rem}
+.key-value{display:inline-flex;align-items:center;gap:0.9rem;background:rgba(8,0,14,0.85);border:1px solid var(--bdrb);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem}
+.key-chars{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;letter-spacing:0.38em;color:var(--pc);text-shadow:0 0 22px rgba(192,132,252,0.5)}
+.copy-btn{background:none;border:1px solid var(--bdr);border-radius:7px;color:rgba(168,85,247,0.45);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.75rem;cursor:pointer;font-family:'Rajdhani',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px}
+.copy-btn:hover{border-color:var(--pb);color:var(--pb)}
+.copy-btn.copied{color:#86efac;border-color:rgba(134,239,172,0.4)}
+.copy-btn svg{width:13px;height:13px}
+.key-note{font-size:0.76rem;color:rgba(168,85,247,0.32);letter-spacing:0.06em;margin-top:0.9rem}
+.daily-badge{display:inline-flex;align-items:center;gap:6px;font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;padding:0.28rem 0.85rem;border-radius:100px;border:1px solid rgba(168,85,247,0.26);color:rgba(168,85,247,0.45);margin-top:0.7rem}
+.daily-badge svg{width:11px;height:11px}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(38,0,72,0.96);border:1px solid var(--pb);border-radius:9px;padding:0.65rem 1.3rem;font-size:0.82rem;letter-spacing:0.07em;color:var(--pc);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:100;pointer-events:none;display:flex;align-items:center;gap:8px}
+.toast svg{width:15px;height:15px;flex-shrink:0}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:500px){.page{padding:2rem 1rem 3rem}.key-chars{font-size:1.4rem;letter-spacing:.22em}.checkpoint{padding:1.3rem}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="page">
+
+<div class="header">
+  <svg class="header-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="28" cy="28" r="27" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
+    <ellipse cx="28" cy="25" rx="14" ry="14" fill="rgba(124,58,237,0.18)"/>
+    <path d="M17 25c0-6.075 4.925-11 11-11s11 4.925 11 11c0 4.1-2.24 7.67-5.55 9.6V38H22.55V34.6C19.24 32.67 17 29.1 17 25z" fill="rgba(168,85,247,0.25)" stroke="rgba(192,132,252,0.7)" stroke-width="1.2"/>
+    <rect x="22" y="38" width="4" height="3" rx="1" fill="rgba(192,132,252,0.6)"/>
+    <rect x="30" y="38" width="4" height="3" rx="1" fill="rgba(192,132,252,0.6)"/>
+    <circle cx="24" cy="24" r="2.5" fill="rgba(192,132,252,0.85)"/>
+    <circle cx="32" cy="24" r="2.5" fill="rgba(192,132,252,0.85)"/>
+    <path d="M26 29h4" stroke="rgba(192,132,252,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+  </svg>
+  <h1>Necro Hub</h1>
+  <div class="sub">Key System</div>
+</div>
+
+<div class="prog-labels" id="prog-labels">
+  <span id="pl-1" class="active">Checkpoint 1</span>
+  <span id="pl-2">Checkpoint 2</span>
+  <span id="pl-3">Checkpoint 3</span>
+  <span id="pl-key">Get Key</span>
+</div>
+<div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+
+<!-- CHECKPOINT 1 -->
+<div class="checkpoint active" id="cp-1">
+  <div class="cp-label">Checkpoint 1 of 3</div>
+  <div class="cp-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--pc)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Checkpoint 1
+  </div>
+  <div class="tasks">
+    <a href="https://youtu.be/lS7NbsDLIyk?si=0ZHVcjiqnCt0ukkA" target="_blank" rel="noopener" class="task" id="cp1-t1" data-cp="1" data-t="1" data-wait="60" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+      <div class="task-info"><span class="task-name">Watch the Video</span><span class="task-type">YouTube · 60s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp1-t1-tlabel">60s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp1-t1-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://www.odoo.com/app/website" target="_blank" rel="noopener" class="task" id="cp1-t2" data-cp="1" data-t="2" data-wait="10" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="task-info"><span class="task-name">Visit the Website</span><span class="task-type">Website · 10s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp1-t2-tlabel">10s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp1-t2-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://jamesclear.com/five-step-creative-process" target="_blank" rel="noopener" class="task" id="cp1-t3" data-cp="1" data-t="3" data-wait="50" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <div class="task-info"><span class="task-name">Read the Article</span><span class="task-type">Article · 50s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp1-t3-tlabel">50s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp1-t3-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://blossomup.co/lp/iq-test/?utm_medium=cpc&utm_source=google&utm_campaign=22835850911&gad_source=5&gad_campaignid=22835850911&gclid=EAIaIQobChMIy_6o3pXKlAMVUBSDAx3IrA_5EAEYASAAEgJm4_D_BwE" target="_blank" rel="noopener" class="task" id="cp1-t4" data-cp="1" data-t="4" data-wait="30" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="task-info"><span class="task-name">Answer the Quiz</span><span class="task-type">Quiz · 30s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp1-t4-tlabel">30s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp1-t4-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+  </div>
+  <div class="cp-footer">
+    <div class="cp-count">Done: <span id="cp1-count">0</span> / 4</div>
+    <button class="btn-next" id="cp1-next" onclick="nextCheckpoint(2)">
+      Continue
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- CHECKPOINT 2 -->
+<div class="checkpoint" id="cp-2">
+  <div class="cp-label">Checkpoint 2 of 3</div>
+  <div class="cp-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--pc)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Checkpoint 2
+  </div>
+  <div class="tasks">
+    <a href="https://youtu.be/cDuWL5BZsQU?si=x7qNDnr_BkF0VzhM" target="_blank" rel="noopener" class="task" id="cp2-t1" data-cp="2" data-t="1" data-wait="60" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+      <div class="task-info"><span class="task-name">Watch the Video</span><span class="task-type">YouTube · 60s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp2-t1-tlabel">60s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp2-t1-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://www.salesforce.com/marketing/b2b-automation/?redirect=pardot.com" target="_blank" rel="noopener" class="task" id="cp2-t2" data-cp="2" data-t="2" data-wait="10" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="task-info"><span class="task-name">Visit the Website</span><span class="task-type">Website · 10s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp2-t2-tlabel">10s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp2-t2-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://jamesclear.com/why-facts-dont-change-minds" target="_blank" rel="noopener" class="task" id="cp2-t3" data-cp="2" data-t="3" data-wait="50" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <div class="task-info"><span class="task-name">Read the Article</span><span class="task-type">Article · 50s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp2-t3-tlabel">50s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp2-t3-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://blossomup.co/lp/iq-test/?utm_medium=cpc&utm_source=google&utm_campaign=22835850911&gad_source=5&gad_campaignid=22835850911&gclid=EAIaIQobChMIy_6o3pXKlAMVUBSDAx3IrA_5EAEYASAAEgJm4_D_BwE" target="_blank" rel="noopener" class="task" id="cp2-t4" data-cp="2" data-t="4" data-wait="30" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="task-info"><span class="task-name">Answer the Quiz</span><span class="task-type">Quiz · 30s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp2-t4-tlabel">30s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp2-t4-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+  </div>
+  <div class="cp-footer">
+    <div class="cp-count">Done: <span id="cp2-count">0</span> / 4</div>
+    <button class="btn-next" id="cp2-next" onclick="nextCheckpoint(3)">
+      Continue
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- CHECKPOINT 3 -->
+<div class="checkpoint" id="cp-3">
+  <div class="cp-label">Checkpoint 3 of 3</div>
+  <div class="cp-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--pc)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Checkpoint 3
+  </div>
+  <div class="tasks">
+    <a href="https://youtu.be/YNfABbNNQx4?si=ewW4BJioqpWe9wmn" target="_blank" rel="noopener" class="task" id="cp3-t1" data-cp="3" data-t="1" data-wait="60" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+      <div class="task-info"><span class="task-name">Watch the Video</span><span class="task-type">YouTube · 60s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp3-t1-tlabel">60s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp3-t1-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://rytr.me/" target="_blank" rel="noopener" class="task" id="cp3-t2" data-cp="3" data-t="2" data-wait="10" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="task-info"><span class="task-name">Visit the Website</span><span class="task-type">Website · 10s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp3-t2-tlabel">10s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp3-t2-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://jamesclear.com/dont-start-from-scratch" target="_blank" rel="noopener" class="task" id="cp3-t3" data-cp="3" data-t="3" data-wait="50" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <div class="task-info"><span class="task-name">Read the Article</span><span class="task-type">Article · 50s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp3-t3-tlabel">50s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp3-t3-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+    <a href="https://blossomup.co/lp/iq-test/?utm_medium=cpc&utm_source=google&utm_campaign=22835850911&gad_source=5&gad_campaignid=22835850911&gclid=EAIaIQobChMIgKPq7pXKlAMVwJJLBR00nh8yEAEYASAAEgJ9uvD_BwE" target="_blank" rel="noopener" class="task" id="cp3-t4" data-cp="3" data-t="4" data-wait="30" onclick="handleTask(event,this)">
+      <div class="task-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="task-info"><span class="task-name">Answer the Quiz</span><span class="task-type">Quiz · 30s required</span></div>
+      <div class="task-right">
+        <div class="timer-wrap"><span class="timer-label" id="cp3-t4-tlabel">30s</span><div class="timer-bar-bg"><div class="timer-bar-fill" id="cp3-t4-tbar" style="width:100%"></div></div></div>
+        <svg class="check-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="task-arrow">→</span>
+      </div>
+    </a>
+  </div>
+  <div class="cp-footer">
+    <div class="cp-count">Done: <span id="cp3-count">0</span> / 4</div>
+    <button class="btn-next" id="cp3-next" onclick="nextCheckpoint('key')">
+      Get Key
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- KEY SCREEN -->
+<div id="screen-key">
+  <div class="key-card">
+    <svg class="key-skull" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="34" cy="34" r="33" stroke="rgba(168,85,247,0.35)" stroke-width="1"/>
+      <ellipse cx="34" cy="30" rx="18" ry="18" fill="rgba(124,58,237,0.15)"/>
+      <path d="M18 30c0-8.837 7.163-16 16-16s16 7.163 16 16c0 5.6-2.868 10.516-7.2 13.36V48H25.2V43.36C20.868 40.516 18 35.6 18 30z" fill="rgba(168,85,247,0.2)" stroke="rgba(192,132,252,0.65)" stroke-width="1.4"/>
+      <rect x="25" y="48" width="6" height="5" rx="1.5" fill="rgba(192,132,252,0.55)"/>
+      <rect x="37" y="48" width="6" height="5" rx="1.5" fill="rgba(192,132,252,0.55)"/>
+      <circle cx="28" cy="29" r="3.5" fill="rgba(192,132,252,0.9)"/>
+      <circle cx="40" cy="29" r="3.5" fill="rgba(192,132,252,0.9)"/>
+      <path d="M31 35h6" stroke="rgba(192,132,252,0.55)" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <h2>All Checkpoints Complete</h2>
+    <p>You've earned your daily Necro Hub key</p>
+    <button class="btn-getkey" id="getkey-btn" onclick="revealKey()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      Reveal Key
+    </button>
+    <div class="key-display" id="key-display">
+      <div class="key-label">Your Daily Key</div>
+      <div class="key-value">
+        <span class="key-chars" id="key-text">XXXXX</span>
+        <button class="copy-btn" id="copy-btn" onclick="copyKey()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <div class="key-note">Enter this key in Necro Hub to unlock all scripts.</div>
+      <div class="daily-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-8.74"/></svg>
+        Refreshes at midnight
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+const completed={};
+const timers={};
+
+function handleTask(e,el){
+  const id=el.id;
+  if(completed[id])return;
+  if(timers[id])return;
+  const wait=parseInt(el.dataset.wait)||10;
+  const cp=parseInt(el.dataset.cp);
+  const t=parseInt(el.dataset.t);
+  const labelEl=document.getElementById(id+'-tlabel');
+  const barEl=document.getElementById(id+'-tbar');
+
+  el.classList.add('waiting');
+  let remaining=wait;
+  if(barEl) barEl.style.transition='none';
+  if(barEl) barEl.style.width='100%';
+  setTimeout(()=>{if(barEl){barEl.style.transition='width 1s linear';barEl.style.width='0%'}},50);
+
+  const iv=setInterval(()=>{
+    remaining--;
+    if(labelEl) labelEl.textContent=remaining+'s';
+    if(remaining<=0){
+      clearInterval(iv);
+      timers[id]=null;
+      el.classList.remove('waiting');
+      markDone(id,cp);
+    }
+  },1000);
+  timers[id]=iv;
+}
+
+function markDone(id,cp){
+  if(completed[id])return;
+  completed[id]=true;
+  const el=document.getElementById(id);
+  if(el) el.classList.add('completed');
+  const done=[1,2,3,4].filter(n=>completed['cp'+cp+'-t'+n]).length;
+  const cEl=document.getElementById('cp'+cp+'-count');
+  if(cEl) cEl.textContent=done;
+  const btn=document.getElementById('cp'+cp+'-next');
+  if(btn&&done===4) btn.classList.add('unlocked');
+  updateProgress();
+}
+
+function updateProgress(){
+  const total=Object.keys(completed).filter(k=>completed[k]).length;
+  document.getElementById('prog-bar').style.width=Math.round((total/12)*75)+'%';
+}
+
+function nextCheckpoint(num){
+  document.querySelectorAll('.checkpoint').forEach(c=>c.classList.remove('active'));
+  document.getElementById('screen-key').classList.remove('active');
+  const order=['1','2','3','key'];
+  const target=String(num);
+  if(num==='key'){
+    document.getElementById('screen-key').classList.add('active');
+    document.getElementById('prog-bar').style.width='88%';
+  } else {
+    document.getElementById('cp-'+num).classList.add('active');
+  }
+  order.forEach(k=>{
+    const el=document.getElementById('pl-'+k);
+    if(!el)return;
+    const ti=order.indexOf(target),ki=order.indexOf(k);
+    el.className=ki<ti?'done':(ki===ti?'active':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function getDailyKey(){
+  const d=new Date();
+  const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#@!$%&?';
+  let s=seed^0xC0FFEE;
+  let key='';
+  for(let i=0;i<5;i++){
+    s=Math.imul(s^(s>>>16),0x45d9f3b);
+    s=Math.imul(s^(s>>>16),0x45d9f3b);
+    s=s^(s>>>16);
+    key+=chars[Math.abs(s)%chars.length];
+  }
+  return key;
+}
+
+function revealKey(){
+  const key=getDailyKey();
+  document.getElementById('key-text').textContent=key;
+  document.getElementById('key-display').classList.add('show');
+  document.getElementById('getkey-btn').style.display='none';
+  document.getElementById('prog-bar').style.width='100%';
+  document.getElementById('pl-key').className='active';
+}
+
+function copyKey(){
+  const key=document.getElementById('key-text').textContent;
+  navigator.clipboard.writeText(key).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    btn.classList.add('copied');
+    showToast('Key copied to clipboard!');
+    setTimeout(()=>{
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+      btn.classList.remove('copied');
+    },2500);
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
