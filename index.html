@@ -133,7 +133,7 @@ body{
 }
 .key-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,#c084fc,#a855f7,transparent)}
 
-.key-skull{display:block;margin:0 auto 1.1rem;width:68px;height:68px;filter:drop-shadow(0 0 20px rgba(168,85,247,0.8))}
+.key-skull{display:block;margin:0 auto 1.1rem;width:68px;height:68px;filter:drop-shadow(0 0 20px rgba(168,85,247,0.8));object-fit:contain}
 .key-card h2{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--pc);margin-bottom:0.45rem}
 .key-card > p{font-size:0.82rem;color:rgba(168,85,247,0.48);letter-spacing:0.08em;margin-bottom:2.2rem}
 
@@ -172,16 +172,7 @@ body{
 <div class="page">
 
 <div class="header">
-  <svg class="header-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="28" cy="28" r="27" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>
-    <ellipse cx="28" cy="25" rx="14" ry="14" fill="rgba(124,58,237,0.18)"/>
-    <path d="M17 25c0-6.075 4.925-11 11-11s11 4.925 11 11c0 4.1-2.24 7.67-5.55 9.6V38H22.55V34.6C19.24 32.67 17 29.1 17 25z" fill="rgba(168,85,247,0.25)" stroke="rgba(192,132,252,0.7)" stroke-width="1.2"/>
-    <rect x="22" y="38" width="4" height="3" rx="1" fill="rgba(192,132,252,0.6)"/>
-    <rect x="30" y="38" width="4" height="3" rx="1" fill="rgba(192,132,252,0.6)"/>
-    <circle cx="24" cy="24" r="2.5" fill="rgba(192,132,252,0.85)"/>
-    <circle cx="32" cy="24" r="2.5" fill="rgba(192,132,252,0.85)"/>
-    <path d="M26 29h4" stroke="rgba(192,132,252,0.6)" stroke-width="1.2" stroke-linecap="round"/>
-  </svg>
+  <img class="header-icon" src="https://iili.io/CHOarP9.png" alt="Necro Hub">
   <h1>Necro Hub</h1>
   <div class="sub">Key System</div>
 </div>
@@ -359,16 +350,7 @@ body{
 <!-- KEY SCREEN -->
 <div id="screen-key">
   <div class="key-card">
-    <svg class="key-skull" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="34" cy="34" r="33" stroke="rgba(168,85,247,0.35)" stroke-width="1"/>
-      <ellipse cx="34" cy="30" rx="18" ry="18" fill="rgba(124,58,237,0.15)"/>
-      <path d="M18 30c0-8.837 7.163-16 16-16s16 7.163 16 16c0 5.6-2.868 10.516-7.2 13.36V48H25.2V43.36C20.868 40.516 18 35.6 18 30z" fill="rgba(168,85,247,0.2)" stroke="rgba(192,132,252,0.65)" stroke-width="1.4"/>
-      <rect x="25" y="48" width="6" height="5" rx="1.5" fill="rgba(192,132,252,0.55)"/>
-      <rect x="37" y="48" width="6" height="5" rx="1.5" fill="rgba(192,132,252,0.55)"/>
-      <circle cx="28" cy="29" r="3.5" fill="rgba(192,132,252,0.9)"/>
-      <circle cx="40" cy="29" r="3.5" fill="rgba(192,132,252,0.9)"/>
-      <path d="M31 35h6" stroke="rgba(192,132,252,0.55)" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
+    <img class="key-skull" src="https://iili.io/CHOarP9.png" alt="Necro Hub">
     <h2>All Checkpoints Complete</h2>
     <p>You've earned your daily Necro Hub key</p>
     <button class="btn-getkey" id="getkey-btn" onclick="revealKey()">
