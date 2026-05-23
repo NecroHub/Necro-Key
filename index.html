@@ -353,9 +353,9 @@ body{
     <img class="key-skull" src="https://iili.io/CHOarP9.png" alt="Necro Hub">
     <h2>All Checkpoints Complete</h2>
     <p>You've earned your daily Necro Hub key</p>
-    <button class="btn-getkey" id="getkey-btn" onclick="revealKey()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-      Reveal Key
+    <button class="btn-getkey" id="getkey-btn" onclick="handleGetKey()">
+      <svg id="getkey-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="getkey-label">Get Key</span>
     </button>
     <div class="key-display" id="key-display">
       <div class="key-label">Your Daily Key</div>
@@ -453,6 +453,8 @@ function nextCheckpoint(num){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+let visitedSponsor=false;
+
 function getDailyKey(){
   const d=new Date();
   const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
@@ -468,13 +470,26 @@ function getDailyKey(){
   return key;
 }
 
-function revealKey(){
-  const key=getDailyKey();
-  document.getElementById('key-text').textContent=key;
-  document.getElementById('key-display').classList.add('show');
-  document.getElementById('getkey-btn').style.display='none';
-  document.getElementById('prog-bar').style.width='100%';
-  document.getElementById('pl-key').className='active';
+function handleGetKey(){
+  if(!visitedSponsor){
+    // First click: open sponsor site and switch button to reveal state
+    window.open('https://www.noticiasaominuto.com/','_blank');
+    visitedSponsor=true;
+    const btn=document.getElementById('getkey-btn');
+    const label=document.getElementById('getkey-label');
+    const icon=document.getElementById('getkey-icon');
+    label.textContent='Reveal Key';
+    icon.innerHTML='<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>';
+    showToast('Site opened — now click Reveal Key!');
+  } else {
+    // Second click: reveal the key
+    const key=getDailyKey();
+    document.getElementById('key-text').textContent=key;
+    document.getElementById('key-display').classList.add('show');
+    document.getElementById('getkey-btn').style.display='none';
+    document.getElementById('prog-bar').style.width='100%';
+    document.getElementById('pl-key').className='active';
+  }
 }
 
 function copyKey(){
