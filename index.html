@@ -456,18 +456,18 @@ function nextCheckpoint(num){
 let visitedSponsor=false;
 
 function getDailyKey(){
-  const d=new Date();
-  const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#@!$%&?';
-  let s=seed^0xC0FFEE;
-  let key='';
-  for(let i=0;i<5;i++){
-    s=Math.imul(s^(s>>>16),0x45d9f3b);
-    s=Math.imul(s^(s>>>16),0x45d9f3b);
-    s=s^(s>>>16);
-    key+=chars[Math.abs(s)%chars.length];
+  const d = new Date();
+  const seed = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#@!$%&?';
+  let s = seed ^ 0xC0FFEE;
+  let key = '';
+  for(let i = 0; i < 16; i++){
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = s ^ (s >>> 16);
+    key += chars[Math.abs(s) % chars.length];
   }
-  return key;
+  return 'Necro-' + key;
 }
 
 function handleGetKey(){
